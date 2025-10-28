@@ -18,6 +18,5 @@ remove: [
   [make "uninstall"]
 ]
 depends: [
-  "coq-template-coq"
   "coq" {>= "8.8"}
 ]
