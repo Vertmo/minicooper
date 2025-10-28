@@ -36,7 +36,7 @@ Lemma nonzero_quotient:
   (z | l) ->
   l / z <> 0.
 Proof.
-  intros. quotient q. intro. subst. omega.
+  intros. quotient q. intro. subst. lia.
 Qed.
 
 Lemma sign_multiply_is_Zabs:
@@ -46,14 +46,14 @@ Proof.
   intros.
   destruct (@Ztrichotomy q 0) as [ | [ | ]].
   (* Sub-case: [q < 0]. *)
-  rewrite Zabs_non_eq; try omega.
+  rewrite Zabs_non_eq; try lia.
   rewrite Z_div_zero_opp_r; eauto using Z_mod_same_full.
-  rewrite Z_div_same_full; try omega.
+  rewrite Z_div_same_full; try lia.
   (* Sub-case: [q = 0]. *)
   subst. auto.
   (* Sub-case: [q > 0]. *)
-  rewrite Z.abs_eq; try omega.
-  rewrite Z_div_same_full; omega.
+  rewrite Z.abs_eq; try lia.
+  rewrite Z_div_same_full; lia.
 Qed.
 
 Lemma Zlcm_pos:
@@ -163,7 +163,7 @@ Lemma wf_mul_nonzero:
   wft x t ->
   wft x (mul_nonzero n t).
 Proof.
-  induction 2; simpl; econstructor; eauto. nia.
+  induction 2; simpl; econstructor; eauto.
 Qed.
 
 Lemma wf_mul:
@@ -178,7 +178,7 @@ Lemma interpret_mul_nonzero:
   forall cenv env n t,
   interpret_term cenv env (mul_nonzero n t) = n * interpret_term cenv env t.
 Proof.
-  induction t; simpl; auto. rewrite IHt. ring. now rewrite interpret_cmul.
+  induction t; simpl; auto. now rewrite interpret_cmul.
 Qed.
 
 Lemma interpret_mul:
@@ -364,7 +364,7 @@ Lemma extend_env_other:
   (y > 0)%nat ->
   extend env n1 y = extend env n2 y.
 Proof.
-  intros. destruct y. exfalso; omega. auto.
+  intros. destruct y. exfalso; lia. auto.
 Qed.
 
 (* If the variable 0 does not occur in the term [t], then the interpretation of
@@ -400,7 +400,7 @@ Lemma adjust_env_other:
   (y > 0)%nat ->
   adjust_env l env y = env y.
 Proof.
-  intros. destruct y. exfalso; omega. auto.
+  intros. destruct y. exfalso; lia. auto.
 Qed.
 
 (* If the variable 0 does not occur in the term [t], then the interpretation of
@@ -887,7 +887,6 @@ Lemma In_interval : forall x n,
 Proof.
   intros. unfold interval. rewrite In_interval'.
   split; intro; rewrite Z2Nat.id in *; try lia.
-  destruct n; simpl in *; lia.
 Qed.
 
 (* ------------------------------------------------------------------------- *)
@@ -948,7 +947,7 @@ Proof.
     (* Case: [Lt] atoms. *)
     rewrite interpret_sub.
     simpl (interpret_term cenv env (TConstant (CGround 1))).
-    omega. (* cool *)
+    lia. (* cool *)
     (* Case: [FNot]. Again, classical reasoning is required. *)
     split.
     specialize (interpret_posnnf cenv env f). tauto.
@@ -1235,7 +1234,7 @@ Proof.
 
   (* Sub-case: an inequality atom where [x] occurs. *)
   eapply (@scale_Lt_atom (Z.abs q)). nia.
-  ring_simplify. rewrite sign_multiply_is_Zabs; eauto. ring.
+  ring_simplify. rewrite sign_multiply_is_Zabs; eauto.
 
   (* Sub-case: a divisibility atom where [x] occurs. *)
   eapply scale_Dv_atom_Zabs. eauto. nia. ring.
@@ -1506,7 +1505,7 @@ Proof.
   generalize (NNPP _ hsx); clear hsx; intros hsx.
   (* We may now use the induction hypothesis, where [sx] plays the role of [x],
      and [x] plays the role of [y]. *)
-  eapply (ih x). omega. eauto.
+  eapply (ih x). lia. eauto.
 Qed.
 
 Lemma lower_bound_least_element:
@@ -1523,8 +1522,8 @@ Proof.
   intros * hfloor [ x ? ].
   eapply lower_bound_least_element_preliminary with (y := x + 1).
   eassumption.
-  assert (~ x < floor). specialize (hfloor x). tauto. omega.
-  exists x. split. assumption. omega.
+  assert (~ x < floor). specialize (hfloor x). tauto. lia.
+  exists x. split. assumption. lia.
 Qed.
 
 (* A non-empty subset of Z either admits arbitrarily large negative elements or
@@ -1646,8 +1645,8 @@ Proof.
   unpack (Z.le_min_l y1 y2).
   unpack (Z.le_min_r y1 y2).
   rewrite interpret_conjunction.
-  rewrite ih1; try omega.
-  rewrite ih2; try omega.
+  rewrite ih1; try lia.
+  rewrite ih2; try lia.
   tauto.
   (* Case [FOr]. *)
   destruct IHall1 as [ y1 ih1 ].
@@ -1656,14 +1655,14 @@ Proof.
   unpack (Z.le_min_l y1 y2).
   unpack (Z.le_min_r y1 y2).
   rewrite interpret_disjunction.
-  rewrite ih1; try omega.
-  rewrite ih2; try omega.
+  rewrite ih1; try lia.
+  rewrite ih2; try lia.
   tauto.
   (* Case [FNot]. *)
   destruct IHall as [ y ih ].
   exists y. intros.
   rewrite interpret_negation.
-  rewrite ih; try omega.
+  rewrite ih; try lia.
   tauto.
 Qed.
 
@@ -1785,7 +1784,7 @@ Lemma divlcm_nonneg:
 Proof.
   induction 1; simpl; eauto using Zlcm_pos with zarith.
   (* Case: [FAtom]. *)
-  term; wff; wft; wfp; try omega.
+  term; wff; wft; wfp; try lia.
 Qed.
 
 (* [minusinf f] is invariant by changing [x] to [x + k * (divlcm f)] for any
@@ -1921,7 +1920,7 @@ Proof.
   induction f; intros; simpl in *; wff; eauto.
   wff. destruct t; [destruct n|]; wft; eauto .
   constructor. split; auto. apply wf_add. apply wf_mul; auto.
-  eapply wft_monotone. eauto. omega.
+  eapply wft_monotone. eauto. lia.
 Qed.
 
 Notation wff1 f := (all (fun p t => wft 1 t /\ wfp p) f).
@@ -2160,8 +2159,7 @@ Proof.
     exists (x + u' - 1). (* j *) eauto with zarith. }
   { (* Atom [0 < - x + u] *)
     rewrite Z.eqb_neq in *. exfalso.
-    erewrite extend_insensitive with (n1:=x-D) (n2:=x) in *; eauto.
-    nia. }
+    erewrite extend_insensitive with (n1:=x-D) (n2:=x) in *; eauto. }
   { exfalso. predicate; term; nnf; simpl in *; eauto; classical.
     - wft. erewrite extend_insensitive with (n1:=x-D) in *; eauto.
     - unpack. subst. rewrite Z.mul_1_l in *.

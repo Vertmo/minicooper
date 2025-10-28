@@ -1,16 +1,16 @@
 Require Export Coq.Program.Equality.
-Require Export Omega.
+Require Export ZArith Lia.
 
-(* Hints for invoking omega on arithmetic subgoals. *)
+(* Hints for invoking lia on arithmetic subgoals. *)
 
-Hint Extern 1 (_ = _ :> nat) => omega.
-Hint Extern 1 (_ <> _ :> nat) => omega.
-Hint Extern 1 (_ = _ :> Z) => omega.
-Hint Extern 1 (_ <> _ :> Z) => omega.
-Hint Extern 1 (_ < _) => omega.
-Hint Extern 1 (_ > _) => omega.
-Hint Extern 1 (_ <= _) => omega.
-Hint Extern 1 (_ >= _) => omega.
+Hint Extern 1 (_ = _ :> nat) => lia.
+Hint Extern 1 (_ <> _ :> nat) => lia.
+Hint Extern 1 (_ = _ :> Z) => lia.
+Hint Extern 1 (_ <> _ :> Z) => lia.
+Hint Extern 1 (_ < _) => lia.
+Hint Extern 1 (_ > _) => lia.
+Hint Extern 1 (_ <= _) => lia.
+Hint Extern 1 (_ >= _) => lia.
 
 (* Dealing with if *)
 

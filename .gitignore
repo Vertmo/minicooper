@@ -1,6 +1,6 @@
 .merlin
 *.aux
-*.vo
+*.vo*
 *.glob
 .lia.cache
 .nia.cache
