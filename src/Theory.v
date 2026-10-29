@@ -2094,6 +2094,43 @@ Function bset (f : formula) : list term :=
     []
   end.
 
+Definition term_eq_dec : forall t1 t2 : term, {t1 = t2} + {t1 <> t2}.
+Proof.
+  repeat decide equality.
+Defined.
+
+Fixpoint dedup_terms (ts : list term) : list term :=
+  match ts with
+  | [] => []
+  | t :: ts' => 
+    if in_dec term_eq_dec t ts' then 
+      dedup_terms ts' 
+    else 
+      t :: dedup_terms ts'
+  end.
+
+Lemma In_dedup_terms:
+  forall t l, In t (dedup_terms l) <-> In t l.
+Proof.
+  intros t l. revert t.
+  induction l as [|u l IH]; intros t.
+  - simpl; tauto.
+  - simpl.
+    destruct (in_dec term_eq_dec u l) as [IN|NIN].
+    + split.
+      * intro H. apply (proj1 (IH t)) in H. simpl. tauto.
+      * intro H. simpl in H. destruct H as [->|H].
+        -- apply (proj2 (IH t)); exact IN.
+        -- apply (proj2 (IH t)); exact H.
+    + split.
+      * intro H. simpl in H. destruct H as [->|H].
+        -- simpl. tauto.
+        -- simpl. right. apply (proj1 (IH t)); exact H.
+      * intro H. simpl in H. destruct H as [->|H].
+        -- simpl. left. reflexivity.
+        -- simpl. right. apply (proj2 (IH t)); exact H.
+Qed.
+
 (* Terms in [bset f] do not contain the variable [x]. *)
 
 Lemma wf1_bset:
@@ -2115,6 +2152,18 @@ Lemma wf1_In_bset:
   wft 1 t.
 Proof.
   intros. applyin wf1_bset. rewrite Forall_forall in *. eauto.
+Qed.
+
+Lemma wf1_In_dedup_bset:
+  forall f t,
+  wff f ->
+  In t (dedup_terms (bset f)) ->
+  wft 1 t.
+Proof.
+  intros f t WFF IN.
+  apply wf1_In_bset with f.
+  - exact WFF.
+  - apply (proj1 (In_dedup_terms _ _)); exact IN.
 Qed.
 
 Lemma bset_correct:
@@ -2218,7 +2267,7 @@ Notation least_element_interpret_qe cenv env f := (
     big_disjunction (fun i =>
       big_disjunction (fun b =>
         subst (add b (TConstant (CGround i))) f
-      ) (bset f)
+      ) (dedup_terms (bset f))
     ) (interval (divlcm f))
   )
 ).
@@ -2236,9 +2285,10 @@ Proof.
   rewrite interpret_big_disjunction2.
   destruct (@bset_correct_divlcm cenv env f x u) as [b [j (Hx&?&?)]]; auto.
   apply big_or_prove with j; auto. rewrite In_interval; auto.
-  apply big_or_prove with b; auto.
-  rewrite interpret_subst by auto. rewrite interpret_add. simpl.
-  rewrite Hx in Hf. apply Hf.
+  apply big_or_prove with b.
+  - apply (proj2 (In_dedup_terms b (bset f))); assumption.
+  - rewrite interpret_subst by auto. rewrite interpret_add. simpl. 
+    rewrite Hx in Hf. apply Hf.
 Qed.
 
 (* We do not actually need to prove the equivalence for the final theorem to
@@ -2267,7 +2317,7 @@ Qed.
 Definition cooper (f : formula) : formula :=
   let f := unity f in
   let f_inf := minusinf f in
-  let bs := bset f in
+  let bs := dedup_terms (bset f) in
   let js := interval (divlcm f) in
   let f_element := (fun j b => subst (add b (TConstant (CGround j))) f) in
   let stage := (fun j =>
@@ -2294,7 +2344,9 @@ Proof.
   { apply all_big_disjunction. intros. apply all_disjunction.
     - now apply wf1_subst, wf_minusinf, wf_unity.
     - apply all_big_disjunction. intros. apply wf1_subst.
-      + apply wf_add; auto. eapply wf1_In_bset;[|eassumption]. now apply wf_unity.
+      + apply wf_add; auto. apply (wf1_In_dedup_bset (f := unity f) x0).
+        * now apply wf_unity.
+        * assumption.
       + now apply wf_unity. }
 
   rewrite interpret_big_disjunction.
@@ -2340,7 +2392,7 @@ Proof.
   apply all_big_disjunction. intros.
   apply all_disjunction. now eauto using wf1_subst, wf_minusinf, wf_unity.
   apply all_big_disjunction. intros.
-  apply wf1_subst. now eauto using wf1_subst, wf_unity, wf_add, wf1_In_bset.
+  apply wf1_subst. now eauto using wf1_subst, wf_unity, wf_add, wf1_In_dedup_bset. 
   now apply wf_unity.
 Qed.
 
